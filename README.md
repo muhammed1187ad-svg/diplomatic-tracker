@@ -1,63 +1,102 @@
-# Diplomatik Temas Haritası — Ekim 2026
+# 🌍 Diplomatic Activity Tracker
+### Diplomatik Temas Haritası
 
-This repository is a static diplomatic-activity map based on the user-supplied September design.
+**An interactive map of high-level diplomatic meetings, with searchable weekly and monthly archives.**
 
-## Structure
+**🌐 [Visit the live website](https://muhammed1187ad-svg.github.io/diplomatic-tracker/)**
 
-- `index.html`: map interface, September legacy archive, initial verified October dataset.
-- `data/weeks/YYYY-MM-DD.json`: independently dated weekly additions. The filename is the **Monday** beginning that week, e.g. `2026-10-19.json` for 19–25 October.
-- `data/legacy_september_2026.json`: preservation copy of the 152 September records from the earlier scan (not re-audited).
+## What is this project?
 
-## Updating each Monday (no approvals or rebuilding)
+Diplomatic Activity Tracker is a public research tool for exploring **where high-level diplomatic meetings take place, who attends them, and what is discussed**.
 
-1. Research completed meetings for the prior Monday–Sunday (Monday 00:00 to next Monday 00:00, Europe/Istanbul). Include only Presidents, Prime Ministers, Foreign Ministers or Defence Ministers. At least one side must belong to your original country list. Separate bilateral and multilateral; omit telephone conversations, announced but not completed events, and unsubstantiated claims.
-2. Save records in an array in a JSON file named for the *Monday on which those meetings happened*: `data/weeks/2026-10-19.json`, for example, for 19–25 October.
-3. On GitHub, open the repository, select **Add file > Upload files**, then upload the new weekly JSON (into `data/weeks/`). Commit to `main`.
-4. GitHub Pages automatically republishes files. `index.html` automatically requests expected weekly filenames for all weeks beginning 28 September 2026, including future weeks as their dates arrive. **No index.html changes are required.** Missing weeks are skipped as 404 and other retrieval failures display an error notice.
-5. The month and week selectors always filter across all available records, preserving old weeks.
+It brings meeting records from government announcements and other reputable sources into one interactive world map. Instead of browsing dozens of separate announcements, visitors can explore meetings by **location, date, country, participant, or topic**.
 
-### Important: GitHub upload path
+The project began with a September 2026 map and is being expanded with weekly updates. It is intended for researchers, students, journalists, policy professionals, and anyone interested in international affairs.
 
-In the GitHub web UI navigate into `data/weeks/` *before* selecting **Add file > Upload files**. Uploading from the repository root would put JSON in the wrong directory. For a correction to an existing week, edit the JSON file directly in GitHub (pencil icon), or replace the file through your Git client. Do not create duplicate records with new IDs.
+## What can visitors do?
 
-### JSON example
+- 🗺️ **Explore the world map:** Each numbered marker shows how many recorded meetings are associated with that location.
+- 📍 **Open meeting details:** Select a marker to see the date, participants, short description, and original source link.
+- 📅 **Browse previous weeks and months:** New weekly records are added without removing earlier archives.
+- 🔎 **Search and filter:** Find meetings by country, leader, city, or subject; switch between **İkili** (bilateral) and **Çok taraflı** (multilateral) events.
+- 📥 **Download CSV data:** Export the currently filtered meetings for your own research.
+
+### Using the map on a phone
+
+The mobile interface has three sections: **Harita** (Map), **Görüşmeler** (Meetings), and **Filtreler** (Filters).
+
+- **One finger:** Drag to move around the map.
+- **Two fingers:** Pinch to zoom in or out.
+- **Tap a city marker:** Open the meetings recorded there.
+- **Filtreler:** Choose a month, week, meeting type, or search term.
+
+On desktop, the map and browsing controls appear side by side.
+
+## What meetings are included?
+
+The tracker focuses on **completed, in-person high-level diplomatic meetings and visits**, particularly those involving presidents, prime ministers, foreign ministers, and defence ministers in the countries being monitored. Bilateral meetings and multilateral events are classified separately.
+
+Routine phone calls, future visit announcements, and meetings involving only lower-ranking officials are excluded from new weekly reporting. Each record includes a link to its source where available.
+
+> **Data notice:** The 152 September 2026 entries originated from the first version of the map and **have not all been independently rechecked**. The October archive initially contains a selected set of sourced meetings, not an exhaustive worldwide survey. Please consult the linked original source for important research or publication. This is an independent project, not an official government website.
+
+## How is the website built?
+
+This is a **static GitHub Pages website**: no account, subscription, or separate application is needed to view it.
+
+- **`index.html`** is the website itself. It contains the map, interface, mobile touch controls, filters, meeting panels, and code that loads new weekly records.
+- **`data/weeks/`** contains the weekly `.json` files with meeting details.
+- **`README.md`** is this project guide, displayed on GitHub.
+
+The website builds its monthly and weekly archive from the dates in the available records. **Adding a new weekly JSON file does not require editing `index.html`.**
+
+## 🔄 How to update the map each Monday
+
+This section is for the person maintaining the website. Visitors do not have to do anything.
+
+1. **Prepare last week's records.** For example, on Monday **19 October 2026**, report on **12–18 October**.
+2. **Get the weekly JSON file.** Its name is the **Monday when that reporting week began**: in this example, `2026-10-12.json`.
+3. Open the repository's **[data/weeks folder](https://github.com/muhammed1187ad-svg/diplomatic-tracker/tree/main/data/weeks)**.
+4. **For a new week:** Click **Add file → Upload files**, select the JSON file, and commit to `main`.
+5. **If the file already exists:** Open it, click the pencil icon to edit, paste the **complete updated JSON** (including any earlier entries for that week), and commit. Do not delete previously recorded meetings when adding more.
+6. After GitHub Pages republishes, the website displays the updated meetings. Previous weeks and months remain in the archive.
+
+**You do not need to replace `index.html` each week.** The scheduled diplomatic research report can prepare a downloadable JSON file, but the maintainer must still **commit that file to GitHub**; research scheduling alone does not update the live site.
+
+### Example of a meeting record
+
+*This is a fictional formatting example, not a real meeting.*
 
 ```json
 [
   {
-    "id": "2026-10-19-001",
+    "id": "2026-10-12-example-001",
     "city": "Ankara",
-    "date": "19 Ekim 2026",
-    "start_date": "2026-10-19",
-    "end_date": "2026-10-19",
-    "parties": "Türkiye–Ülke | Ad–Ad",
-    "topic": "Kısa görüşme özeti",
+    "date": "14 Ekim 2026",
+    "start_date": "2026-10-14",
+    "end_date": "2026-10-14",
+    "parties": "Country A–Country B | Foreign ministers",
+    "topic": "Bilateral consultations",
     "kind": "İkili",
-    "source": "https://official-government-source.example/article",
+    "source": "https://example.org/meeting",
     "lat": 39.9334,
     "lon": 32.8597
   }
 ]
 ```
 
-`kind` must be exactly `İkili` or `Çok taraflı`. For **new cities** not already on the map, include numeric `lat` and `lon` properties in the weekly JSON entry so the map can pin the city automatically; existing cities use the built-in coordinate table. This avoids changing `index.html` every week. Prefer city-center coordinates rather than inventing a street address.
+Use `İkili` or `Çok taraflı` for `kind`. Keep dates in `YYYY-MM-DD` format, source links as HTTPS URLs, and meeting IDs unique. Include `lat` and `lon` for a new city not already known to the map. Even a single-meeting weekly JSON file needs the enclosing square brackets `[` and `]`.
 
-## Publishing initial October update
+## Project status and future plans
 
-Upload `index.html` at the **repository root**, and upload three files in `data/weeks/`:
-- `2026-09-28.json` (October 4 records)
-- `2026-10-05.json` (October 5–11)
-- `2026-10-12.json` (October 12, current partial week)
-The initial October records are already embedded in `index.html` as a fallback; the weekly files are authoritative and can override those records by their IDs.
+The website is **publicly accessible**, although it asks search engines not to index it; that request is **not** a privacy or access restriction. The map has no sign-in or per-meeting approval system.
 
-## Scope and data quality
+The longer-term goal is a more comprehensive, transparent diplomatic archive with improved historical coverage, data checks, country comparisons, and potential community contributions. An open-source license and contribution guide can be added when the project is ready to accept them.
 
-September: 152 legacy records have not been independently audited, retained without approval workflow because requested.
-October: selected source-confirmed meetings through 12 October 2026, not a claim of exhaustive coverage. Phone calls, future visit announcements and meetings involving only other ranks are excluded.
+---
 
-## Hosting
+### 🇹🇷 Türkçe kısa açıklama
 
-GitHub Pages: Settings → Pages → Deploy from branch → main / (root).
-Expected URL: https://muhammed1187ad-svg.github.io/diplomatic-tracker/
+**Diplomatik Temas Haritası**, üst düzey diplomatik görüşmeleri dünya haritasında gösteren ve haftalık/aylık arşiv sunan bağımsız bir araştırma projesidir. Konumlara tıklayarak görüşmenin tarihini, taraflarını, konusunu ve kaynak bağlantısını görebilir; arama, filtreleme ve CSV indirme özelliklerinden yararlanabilirsiniz.
 
-Website is public even with `noindex` meta; `noindex` only discourages search indexing.
+Yeni haftanın verileri `data/weeks/` klasörüne **haftanın pazartesi tarihiyle adlandırılmış JSON dosyası** olarak eklenir. Eski kayıtlar silinmez. **Eylül 2026 kayıtlarının tamamı yeniden teyit edilmiş değildir**; önemli kullanımlarda kaynakların incelenmesi tavsiye edilir.
