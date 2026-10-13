@@ -37,7 +37,7 @@
  .stat strong{font-size:17px}
  .stat small{font-size:10px}
  .map-area{flex:1 1 auto;min-height:0;height:auto;margin-bottom:calc(64px + env(safe-area-inset-bottom));overflow:hidden}
- #world{touch-action:none;overscroll-behavior:contain}
+ #world,#world *{touch-action:none}#world{overscroll-behavior:contain}
  .map-toolbar{top:9px;left:9px;right:9px;max-width:none;width:auto;padding:9px 12px;border-radius:9px}
  .map-toolbar strong{font-size:12px}
  .map-toolbar p{display:none}
@@ -483,14 +483,128 @@ function filt(){
 }
 function groupByCity(items){const obj={};items.forEach(e=>(obj[e.city]??=[]).push(e));Object.values(obj).forEach(arr=>arr.sort((a,b)=>a.start_date.localeCompare(b.start_date)||a.kind.localeCompare(b.kind,'tr')));return obj}
 function clamp(n,min,max){return Math.min(Math.max(n,min),max)}
-function setViewBox(){view.x=clamp(view.x,0,1440-view.w);view.y=clamp(view.y,0,720-view.h);world.setAttribute('viewBox',[view.x,view.y,view.w,view.h].map(n=>n.toFixed(3)).join(' '));refreshPinSize()}
+function setViewBox(){
+ // Portrait screens use `preserveAspectRatio=... slice`: only a central part
+ // of the SVG viewBox is actually visible. Allow panning across the cropped
+ // world even when view.w is 1440 (the former clamp locked the entire map).
+ let cropX=0,cropY=0;
+ const box=world.getBoundingClientRect();
+ if(world.getAttribute('preserveAspectRatio')?.includes('slice')&&box.width>0&&box.height>0){
+  const scale=Math.max(box.width/view.w,box.height/view.h);
+  cropX=Math.max(0,(view.w-box.width/scale)/2);
+  cropY=Math.max(0,(view.h-box.height/scale)/2);
+ }
+ view.x=clamp(view.x,-cropX,1440-view.w+cropX);
+ view.y=clamp(view.y,-cropY,720-view.h+cropY);
+ world.setAttribute('viewBox',[view.x,view.y,view.w,view.h].map(n=>n.toFixed(3)).join(' '));
+ refreshPinSize();
+}
 function changeZoom(f,around){const w=clamp(view.w*f,250,1440),h=w/2;const cx=around?.x??(view.x+view.w/2),cy=around?.y??(view.y+view.h/2);const rx=(cx-view.x)/view.w,ry=(cy-view.y)/view.h;view={x:cx-rx*w,y:cy-ry*h,w,h};setViewBox()}
 function getSvgPosition(evt){const p=world.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;return p.matrixTransform(world.getScreenCTM().inverse())}
 world.addEventListener('wheel',evt=>{evt.preventDefault();changeZoom(evt.deltaY>0?1.17:.83,getSvgPosition(evt))},{passive:false});
-world.addEventListener('pointerdown',evt=>{if(evt.target.closest('.pin'))return;moving=true;previous={x:evt.clientX,y:evt.clientY};world.classList.add('grabbing');world.setPointerCapture(evt.pointerId)});
-world.addEventListener('pointermove',evt=>{if(!moving)return;const bbox=world.getBoundingClientRect(),fit=window.matchMedia('(max-width:850px)').matches?Math.max(bbox.width/view.w,bbox.height/view.h):Math.min(bbox.width/view.w,bbox.height/view.h);view.x-=(evt.clientX-previous.x)/fit;view.y-=(evt.clientY-previous.y)/fit;previous={x:evt.clientX,y:evt.clientY};setViewBox()});
-function stopDrag(){moving=false;world.classList.remove('grabbing')}
-world.addEventListener('pointerup',stopDrag);world.addEventListener('pointercancel',stopDrag);
+// Native browser scrolling/zooming must not take over gestures that begin on the SVG.
+// All touch interactions are handled below, rather than relying on pointer capture in iOS Safari.
+function panMapPixels(dx,dy){
+ const matrix=world.getScreenCTM();
+ if(!matrix)return;
+ const scaleX=Math.hypot(matrix.a,matrix.b)||1;
+ const scaleY=Math.hypot(matrix.c,matrix.d)||1;
+ view.x-=dx/scaleX;
+ view.y-=dy/scaleY;
+ setViewBox();
+}
+// Mouse/pen panning remains separate: browsers generate both pointer and touch
+// events for fingers, and processing both would cause double movement.
+let draggingPointerId=null;
+world.addEventListener('pointerdown',evt=>{
+ if(evt.pointerType==='touch'||(evt.button!==0&&evt.pointerType==='mouse'))return;
+ if(evt.target.closest?.('.pin'))return; // ordinary mouse click selects a pin
+ moving=true;
+ draggingPointerId=evt.pointerId;
+ previous={x:evt.clientX,y:evt.clientY};
+ world.classList.add('grabbing');
+ try{world.setPointerCapture(evt.pointerId)}catch(_){}
+});
+world.addEventListener('pointermove',evt=>{
+ if(evt.pointerType==='touch'||!moving||draggingPointerId!==evt.pointerId)return;
+ panMapPixels(evt.clientX-previous.x,evt.clientY-previous.y);
+ previous={x:evt.clientX,y:evt.clientY};
+});
+function stopDrag(evt){
+ if(evt?.pointerType==='touch'||(evt&&draggingPointerId!==evt.pointerId))return;
+ moving=false;
+ draggingPointerId=null;
+ world.classList.remove('grabbing');
+}
+world.addEventListener('pointerup',stopDrag);
+world.addEventListener('pointercancel',stopDrag);
+world.addEventListener('lostpointercapture',stopDrag);
+
+// Reliable iPhone/iPad Safari and Android pan, including gestures that begin
+// directly on a city marker. Two fingers can pinch to zoom around their midpoint.
+let touchGesture=null;
+let touchMoved=false;
+let suppressMapClicksUntil=0;
+function snapshotTouches(touchList){
+ return Array.from(touchList,t=>({x:t.clientX,y:t.clientY})).slice(0,2);
+}
+function touchCenter(points){
+ return points.length===2?
+  {x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2}:
+  {x:points[0].x,y:points[0].y};
+}
+function touchDistance(points){
+ if(points.length<2)return 0;
+ return Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);
+}
+world.addEventListener('touchstart',evt=>{
+ if(!evt.touches.length)return;
+ touchGesture=snapshotTouches(evt.touches);
+ if(evt.touches.length>1)touchMoved=true;
+ world.classList.add('grabbing');
+},{passive:true});
+world.addEventListener('touchmove',evt=>{
+ if(!evt.touches.length)return;
+ // Cancel mobile page scrolling, rubber-band scrolling and native page zoom.
+ if(evt.cancelable)evt.preventDefault();
+ const current=snapshotTouches(evt.touches);
+ if(!touchGesture){touchGesture=current;return}
+ const before=touchCenter(touchGesture),after=touchCenter(current);
+ const dx=after.x-before.x,dy=after.y-before.y;
+ if(touchGesture.length===2&&current.length===2){
+  const oldDistance=touchDistance(touchGesture),newDistance=touchDistance(current);
+  if(oldDistance>5&&newDistance>5){
+   const anchor=getSvgPosition({clientX:before.x,clientY:before.y});
+   changeZoom(oldDistance/newDistance,anchor);
+  }
+  panMapPixels(dx,dy);
+  touchMoved=true;
+ }else if(touchGesture.length===1&&current.length===1){
+  if(Math.abs(dx)+Math.abs(dy)>0){panMapPixels(dx,dy);touchMoved=true}
+ }
+ touchGesture=current;
+},{passive:false});
+world.addEventListener('touchend',evt=>{
+ if(touchMoved)suppressMapClicksUntil=Date.now()+350;
+ if(evt.touches.length){
+  touchGesture=snapshotTouches(evt.touches);
+ }else{
+  touchGesture=null;
+  touchMoved=false;
+  world.classList.remove('grabbing');
+ }
+},{passive:true});
+world.addEventListener('touchcancel',()=>{
+ touchGesture=null;touchMoved=false;world.classList.remove('grabbing');
+},{passive:true});
+world.addEventListener('click',evt=>{
+ if(Date.now()<suppressMapClicksUntil){
+  evt.preventDefault();evt.stopImmediatePropagation();
+ }
+},true);
+// On older iOS, pinch can also generate these non-standard Safari gestures.
+world.addEventListener('gesturestart',evt=>evt.preventDefault(),{passive:false});
+world.addEventListener('gesturechange',evt=>evt.preventDefault(),{passive:false});
 $('zoomPlus').addEventListener('click',()=>changeZoom(.74));$('zoomMinus').addEventListener('click',()=>changeZoom(1.35));$('zoomReset').addEventListener('click',()=>{view={x:0,y:0,w:1440,h:720};setViewBox()});
 function createSvg(tag,attrs={}){const n=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));return n}
 function markerRadius(n){return Math.min(22,11+Math.sqrt(n)*1.12)}
