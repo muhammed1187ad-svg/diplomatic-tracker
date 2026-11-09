@@ -1,0 +1,67 @@
+[
+  {
+    "id": "2026-11-02-001",
+    "city": "St. John’s",
+    "date": "2 Kasım 2026",
+    "start_date": "2026-11-02",
+    "end_date": "2026-11-02",
+    "parties": "Avustralya–Birleşik Krallık | Başbakanlar Anthony Albanese ve Andy Burnham",
+    "topic": "AUKUS, serbest ticaret anlaşması, gençlerin çalışma vizeleri, yapay zekâ ve çevrim içi tehditler görüşüldü.",
+    "kind": "İkili",
+    "source": "https://www.pm.gov.au/media/press-conference-saint-johns-antigua-and-barbuda-3-nov-2026",
+    "lat": 17.1274,
+    "lon": -61.8468
+  },
+  {
+    "id": "2026-11-02-002",
+    "city": "Madrid",
+    "date": "3 Kasım 2026",
+    "start_date": "2026-11-03",
+    "end_date": "2026-11-03",
+    "parties": "Brezilya–Venezuela | Dışişleri Bakanları Mauro Vieira ve Oliver Blanco",
+    "topic": "İkili ticaret, Amazon bölgesinde iş birliği ve diplomatik temasların sürdürülmesi görüşüldü.",
+    "kind": "İkili",
+    "source": "https://www.reuters.com/world/americas/brazil-venezuela-foreign-ministers-discuss-trade-amazon-cooperation-2026-11-03/",
+    "lat": 40.4168,
+    "lon": -3.7038
+  },
+  {
+    "id": "2026-11-02-003",
+    "city": "St. John’s",
+    "date": "3 Kasım 2026",
+    "start_date": "2026-11-03",
+    "end_date": "2026-11-03",
+    "parties": "Avustralya–Kanada | Başbakanlar Anthony Albanese ve Mark Carney",
+    "topic": "Kritik mineraller, savunma, radar sistemleri, yapay zekâ ve ticari ilişkiler ele alındı.",
+    "kind": "İkili",
+    "source": "https://www.pm.gov.au/media/press-conference-saint-johns-antigua-and-barbuda-3-nov-2026",
+    "lat": 17.1274,
+    "lon": -61.8468
+  },
+  {
+    "id": "2026-11-02-004",
+    "city": "St. John’s",
+    "date": "3–4 Kasım 2026",
+    "start_date": "2026-11-03",
+    "end_date": "2026-11-04",
+    "parties": "Commonwealth ülkeleri | Devlet ve hükümet başkanları",
+    "topic": "28. Commonwealth Hükümet Başkanları Toplantısı: ticaret, yatırım, iklim dayanıklılığı ve sürdürülebilir kalkınma görüşüldü.",
+    "kind": "Çok taraflı",
+    "source": "https://thecommonwealth.org/CHOGM2026/news/chogm-2026-communique",
+    "lat": 17.1274,
+    "lon": -61.8468
+  },
+  {
+    "id": "2026-11-02-005",
+    "city": "Şuşa",
+    "date": "8 Kasım 2026",
+    "start_date": "2026-11-08",
+    "end_date": "2026-11-08",
+    "parties": "Türkiye–Azerbaycan | Cumhurbaşkanları Recep Tayyip Erdoğan ve İlham Aliyev",
+    "topic": "Erdoğan’ın resmî Azerbaycan ziyareti kapsamında Şuşa’da baş başa görüşme gerçekleştirildi.",
+    "kind": "İkili",
+    "source": "https://president.az/en/articles/view/74601",
+    "lat": 39.7589,
+    "lon": 46.7492
+  }
+]
